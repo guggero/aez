@@ -1,6 +1,4 @@
 const { xorBytes1x16, xorBytes4x16, uint8, uint32 } = require('./functions');
-const Buffer = require('safe-buffer').Buffer;
-const BLOCK_SIZE = 16;
 
 const TE0 = [
   0xc66363a5, 0xf87c7c84, 0xee777799, 0xf67b7b8d,

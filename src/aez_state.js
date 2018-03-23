@@ -2,7 +2,7 @@ const { BLOCK_SIZE, uint32, mkBlock, xorBytes1x16, xorBytes4x16, extractKey, mul
 const AESRound = require('./aes_round');
 const Buffer = require('safe-buffer').Buffer;
 
-const State = function () {
+const AEZState = function () {
 
   this.I = [mkBlock(), mkBlock()];
   this.J = [mkBlock(), mkBlock(), mkBlock()];
@@ -134,4 +134,4 @@ const State = function () {
 
 };
 
-module.exports = State;
+module.exports = AEZState;

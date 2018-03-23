@@ -3,7 +3,7 @@
 const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const { extractKey } = require('../src/functions');
-const State = require('../src/state');
+const AEZState = require('../src/aez_state');
 
 const testVectors = {
   hash: require('./test-vectors/hash.json'),
@@ -18,7 +18,7 @@ describe('test vectors', () => {
       const k = Buffer.from(vec.k, 'hex');
       const ad = vec.ad.map(a => Buffer.from(a, 'hex'));
 
-      const state = new State();
+      const state = new AEZState();
       state.reset();
       state.init(k);
 
@@ -36,7 +36,7 @@ describe('test vectors', () => {
       const k = Buffer.from(vec.k, 'hex');
       const delta = Buffer.from(vec.delta, 'hex');
 
-      const state = new State();
+      const state = new AEZState();
       state.reset();
       state.init(k);
 
