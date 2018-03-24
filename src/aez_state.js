@@ -1,4 +1,7 @@
-const { BLOCK_SIZE, uint32, mkBlock, xorBytes1x16, xorBytes4x16, extractKey, multBlock, doubleBlock } = require('./functions');
+const {
+  BLOCK_SIZE, uint32, mkBlock, xorBytes1x16, xorBytes4x16,
+  extractKey, multBlock, doubleBlock, oneZeroPad, xorBytes
+} = require('./functions');
 const AESRound = require('./aes_round');
 const Buffer = require('safe-buffer').Buffer;
 
@@ -159,6 +162,8 @@ const AEZState = function () {
   };
 
   this.aezTiny = function (delta, input, d) {
+    const inBytes = input.length;
+    const output = mkBlock(inBytes);
     const buf = mkBlock(2 * BLOCK_SIZE);
     const [L, R, tmp] = [mkBlock(), mkBlock(), mkBlock()];
     let mask = 0x00;
@@ -166,7 +171,6 @@ const AEZState = function () {
     let rounds, i, j, step;
 
     i = 7;
-    const inBytes = input.length;
     if (inBytes === 1) {
       rounds = 24;
     } else if (inBytes === 2) {
@@ -231,21 +235,104 @@ const AEZState = function () {
       buf[inBytes / 2] = (L[0] >> 4) | (R[inBytes / 2] & 0xf0);
     }
 
-    const out = mkBlock(inBytes);
-    buf.slice(0, inBytes).copy(out);
+    buf.slice(0, inBytes).copy(output);
     if (inBytes < 16 && d === 0) {
       buf.fill(0, inBytes, BLOCK_SIZE);
       buf[0] |= 0x80;
       xorBytes1x16(delta, buf, buf);
       this.aes.AES4(ZERO, this.I[1], this.L[3], buf, tmp);
-      out[0] ^= tmp[0] & 0x80;
+      output[0] ^= tmp[0] & 0x80;
     }
 
-    return out;
+    return output;
   };
 
   this.aezCore = function (delta, input, d) {
+    const inBytes = input.length;
+    const initialBytes = inBytes - fragBytes - 32;
+    const [tmp, X, Y, S] = [mkBlock(), mkBlock(), mkBlock(), mkBlock()];
 
+    let fragBytes = inBytes % 32;
+    let output = mkBlock(inBytes);
+    const outOrig = output;
+    const inOrig = input;
+
+    // Compute X and store intermediate results
+    if (inBytes >= 64) {
+      this.aezCorePass1(input, output, X);
+    }
+
+    // Finish X calculation
+    input = input.slice(initialBytes);
+    if (fragBytes >= BLOCK_SIZE) {
+      this.aes.AES4(ZERO, this.I[1], this.L[4], input, tmp);
+      xorBytes1x16(X, tmp, X);
+      oneZeroPad(input.slice(BLOCK_SIZE), fragBytes - BLOCK_SIZE, tmp);
+      this.aes.AES4(ZERO, this.I[1], this.L[5], tmp, tmp);
+      xorBytes1x16(X, tmp, X);
+    } else if (fragBytes > 0) {
+      oneZeroPad(input, fragBytes, tmp);
+      this.aes.AES4(ZERO, this.I[1], this.L[4], tmp, tmp);
+      xorBytes1x16(X, tmp, X);
+    }
+
+    // Calculate S
+    output = outOrig.slice(inOrig.length - 32);
+    input = inOrig.slice(inOrig.length - 32);
+    this.aes.AES4(ZERO, this.I[1], this.L[(1 + d) % 8], input.slice(BLOCK_SIZE, BLOCK_SIZE * 2), tmp);
+    xorBytes4x16(X, input, delta, tmp, output);
+    this.aes.AES10(this.L[(1 + d) % 8], output, tmp);
+    xorBytes1x16(input.slice(BLOCK_SIZE), tmp, output.slice(BLOCK_SIZE, BLOCK_SIZE * 2));
+    xorBytes1x16(output, output.slice(BLOCK_SIZE), S);
+
+    // Pass 2 over intermediate values in output[32..]. Final values written
+    output = outOrig;
+    input = inOrig;
+    if (input.length >= 64) {
+      this.aezCorePass2(input, output, Y, S);
+    }
+
+    // Finish Y calculation and finish encryption of fragment bytes
+    output = output.slice(initialBytes);
+    input = input.slice(initialBytes);
+    if (fragBytes >= BLOCK_SIZE) {
+      this.aes.AES10(this.L[4], S, tmp);
+      xorBytes1x16(input, tmp, output);
+      this.aes.AES4(ZERO, this.I[1], this.L[4], output, tmp);
+      xorBytes1x16(Y, tmp, Y);
+
+      output = output.slice(BLOCK_SIZE);
+      input = input.slice(BLOCK_SIZE);
+      fragBytes -= BLOCK_SIZE;
+
+      this.aes.AES10(this.L[5], S, tmp);
+      xorBytes(input, tmp, tmp.slice(0, fragBytes));
+      tmp.slice(0, fragBytes).copy(output);
+      tmp.slice(fragBytes).fill(0);
+      tmp[fragBytes] = 0x80;
+      this.aes.AES4(ZERO, this.I[1], this.L[5], tmp, tmp);
+      xorBytes1x16(Y, tmp, Y);
+    } else {
+      this.aes.AES10(this.L[4], S, tmp);
+      xorBytes(input, tmp, tmp.slice(0, fragBytes));
+      tmp.slice(0, fragBytes).copy(output);
+      tmp.slice(fragBytes).fill(0);
+      tmp[fragBytes] = 0x80;
+      this.aes.AES4(ZERO, this.I[1], this.L[4], tmp, tmp);
+      xorBytes1x16(Y, tmp, Y);
+    }
+
+    // Finish encryption of last two blocks
+    output = outOrig.slice(inOrig.length - 32);
+    this.aes.AES10(this.L[(2 - d) % 8], output.slice(BLOCK_SIZE), tmp);
+    xorBytes1x16(output, tmp, output);
+    this.aes.AES4(ZERO, this.I[1], this.L[(2 - d) % 8], output, tmp);
+    xorBytes4x16(tmp, output.slice(BLOCK_SIZE), delta, Y, output.slice(BLOCK_SIZE));
+    output.slice(0, BLOCK_SIZE).copy(tmp);
+    output.slice(BLOCK_SIZE).copy(output.slice(0, BLOCK_SIZE));
+    tmp.copy(output.slice(BLOCK_SIZE));
+
+    return output;
   };
 
   this.aezCorePass1 = function (input, output, X) {

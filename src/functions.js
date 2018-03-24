@@ -20,12 +20,13 @@ function xorBytes4x16(a, b, c, d, dst) {
   }
 }
 
-function byte(b) {
-  var maxVal = Math.pow(2, hex.length / 2 * 8);
-  if (num > maxVal / 2 - 1) {
-    num = num - maxVal
+function xorBytes(a, b, dst) {
+  if (a.length < dst.length || b.length < dst.length) {
+    throw new Error('aez: xorBytes: len');
   }
-  return num;
+  for (let i = 0; i < dst.length; i++) {
+    dst[i] = a[i] ^ b[i]
+  }
 }
 
 function uint32(i) {
@@ -70,15 +71,23 @@ function doubleBlock(p) {
   p[15] = (p[15] << 1) ^ ((tmp >> 7) ? 135 : 0);
 }
 
+function oneZeroPad(src, size, dst) {
+  dst.fill(0);
+  src.slice(0, size).copy(dst);
+  dst[size] = 0x80;
+}
+
 module.exports = {
   BLOCK_SIZE,
   EXTRACTED_KEY_SIZE,
   mkBlock,
   xorBytes1x16,
   xorBytes4x16,
+  xorBytes,
   uint32,
   uint8,
   extractKey,
   multBlock,
   doubleBlock,
+  oneZeroPad,
 };

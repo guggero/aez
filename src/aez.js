@@ -1,6 +1,4 @@
-const Buffer = require('safe-buffer').Buffer;
 const AEZState = require('./aez_state');
-const { BLOCK_SIZE, mkBlock, xorBytes1x16 } = require('./functions');
 
 const VERSION = 'v5';
 
