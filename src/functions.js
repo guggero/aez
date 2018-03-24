@@ -4,8 +4,8 @@ const blake = require('blakejs');
 const BLOCK_SIZE = 16;
 const EXTRACTED_KEY_SIZE = 3 * 16;
 
-function mkBlock() {
-  return Buffer.alloc(BLOCK_SIZE, 0);
+function mkBlock(size) {
+  return Buffer.alloc(size || BLOCK_SIZE, 0);
 }
 
 function xorBytes1x16(a, b, dst) {
@@ -18,6 +18,14 @@ function xorBytes4x16(a, b, c, d, dst) {
   for (let i = 0; i < BLOCK_SIZE; i++) {
     dst[i] = a[i] ^ b[i] ^ c[i] ^ d[i];
   }
+}
+
+function byte(b) {
+  var maxVal = Math.pow(2, hex.length / 2 * 8);
+  if (num > maxVal / 2 - 1) {
+    num = num - maxVal
+  }
+  return num;
 }
 
 function uint32(i) {
