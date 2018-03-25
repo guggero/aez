@@ -1,4 +1,5 @@
 const AEZState = require('./aez_state');
+const { mkBlock } = require('./functions');
 
 const VERSION = 'v5';
 
@@ -7,12 +8,16 @@ function encrypt(key, nonce, additionalData, tau, plaintext) {
   state.reset();
   state.init(key);
   let delta = state.aezHash(nonce, additionalData, tau * 8);
+  let x = mkBlock(plaintext.length + tau);
 
   if (!plaintext || plaintext.length === 0) {
-    return state.aezPRF(delta, tau);
+    state.aezPRF(delta, tau, x);
   } else {
-    return state.encipher(delta, plaintext);
+    plaintext.copy(x);
+    state.encipher(delta, x, x);
   }
+
+  return x;
 }
 
 function decrypt(key, nonce, additionalData, tau, ciphertext) {
@@ -21,15 +26,16 @@ function decrypt(key, nonce, additionalData, tau, ciphertext) {
   state.init(key);
   let delta = state.aezHash(nonce, additionalData, tau * 8);
   let sum = 0;
-  let x = null;
+  let x = mkBlock(ciphertext.length);
 
   if (ciphertext && ciphertext.length === tau) {
-    x = state.aezPRF(delta, tau);
+    state.aezPRF(delta, tau, x);
     for (let i = 0; i < tau; i++) {
       sum |= x[i] ^ ciphertext[i];
     }
+    x = x.slice(0, ciphertext.length - tau);
   } else {
-    x = state.decipher(delta, ciphertext);
+    state.decipher(delta, ciphertext, x);
     for (let i = 0; i < tau; i++) {
       sum |= x[ciphertext.length - tau + i];
     }

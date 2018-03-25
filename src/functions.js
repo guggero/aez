@@ -5,7 +5,7 @@ const BLOCK_SIZE = 16;
 const EXTRACTED_KEY_SIZE = 3 * 16;
 
 function mkBlock(size) {
-  return Buffer.alloc(size || BLOCK_SIZE, 0);
+  return Buffer.alloc((size === undefined ? BLOCK_SIZE : size), 0);
 }
 
 function xorBytes1x16(a, b, dst) {

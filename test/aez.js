@@ -3,7 +3,7 @@
 const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const aez = require('../src/aez');
-const { extractKey } = require('../src/functions');
+const { extractKey, mkBlock } = require('../src/functions');
 const AEZState = require('../src/aez_state');
 
 const testVectors = {
@@ -14,68 +14,96 @@ const testVectors = {
 };
 
 describe('test vectors', () => {
-  it('aezHash', () => {
+  describe('aezHash', () => {
     testVectors.hash.forEach(vec => {
-      // given
-      const key = Buffer.from(vec.key, 'hex');
-      const ad = vec.ad.map(a => Buffer.from(a, 'hex'));
+      it(vec.key, () => {
+        // given
+        const key = Buffer.from(vec.key, 'hex');
+        const ad = vec.ad.map(a => Buffer.from(a, 'hex'));
 
-      const state = new AEZState();
-      state.reset();
-      state.init(key);
+        const state = new AEZState();
+        state.reset();
+        state.init(key);
 
-      // when
-      const result = state.aezHash(ad.shift(), ad, vec.tau);
+        // when
+        const result = state.aezHash(ad.shift(), ad, vec.tau);
 
-      // then
-      assert.strictEqual(result.toString('hex'), vec.result);
+        // then
+        assert.strictEqual(result.toString('hex'), vec.result);
+      });
     });
   });
 
-  it('aezPRF', () => {
+  describe('aezPRF', () => {
     testVectors.prf.forEach(vec => {
-      // given
-      const key = Buffer.from(vec.key, 'hex');
-      const delta = Buffer.from(vec.delta, 'hex');
+      it(vec.key, () => {
+        // given
+        const key = Buffer.from(vec.key, 'hex');
+        const delta = Buffer.from(vec.delta, 'hex');
 
-      const state = new AEZState();
-      state.reset();
-      state.init(key);
+        const state = new AEZState();
+        state.reset();
+        state.init(key);
+        const result = mkBlock(vec.tau);
 
-      // when
-      const result = state.aezPRF(delta, vec.tau);
+        // when
+        state.aezPRF(delta, vec.tau, result);
 
-      // then
-      assert.strictEqual(result.toString('hex'), vec.result);
+        // then
+        assert.strictEqual(result.toString('hex'), vec.result);
+      });
     });
   });
 
-  it('extractKey', () => {
+  describe('extractKey', () => {
     testVectors.extract.forEach(vec => {
-      // given
-      const key = Buffer.from(vec.key, 'hex');
+      it(vec.key, () => {
+        // given
+        const key = Buffer.from(vec.key, 'hex');
 
-      // when
-      const result = extractKey(key);
+        // when
+        const result = extractKey(key);
 
-      // then
-      assert.strictEqual(result.toString('hex'), vec.result);
+        // then
+        assert.strictEqual(result.toString('hex'), vec.result);
+      });
     });
   });
 
-  it('encrypt', () => {
+  describe('encrypt', () => {
     testVectors.encrypt.forEach(vec => {
-      // given
-      const key = Buffer.from(vec.key, 'hex');
-      const nonce = Buffer.from(vec.nonce, 'hex');
-      const ad = vec.ad.map(a => Buffer.from(a, 'hex'));
-      const message = Buffer.from(vec.message, 'hex');
+      it(vec.key, () => {
+        // given
+        const key = Buffer.from(vec.key, 'hex');
+        const nonce = Buffer.from(vec.nonce, 'hex');
+        const ad = vec.ad.map(a => Buffer.from(a, 'hex'));
+        const message = Buffer.from(vec.message, 'hex');
 
-      // when
-      const result = aez.encrypt(key, nonce, ad, vec.tau, message);
+        // when
+        const result = aez.encrypt(key, nonce, ad, vec.tau, message);
 
-      // then
-      assert.strictEqual(result.toString('hex'), vec.result);
+        // then
+        assert.strictEqual(result.toString('hex'), vec.result);
+      });
+    });
+  });
+
+  describe('decrypt', () => {
+    testVectors.encrypt.forEach(vec => {
+      it(vec.key, () => {
+        // given
+        const key = Buffer.from(vec.key, 'hex');
+        const nonce = Buffer.from(vec.nonce, 'hex');
+        const ad = vec.ad.map(a => Buffer.from(a, 'hex'));
+        const message = Buffer.from(vec.message, 'hex');
+        const ciphertext = aez.encrypt(key, nonce, ad, vec.tau, message);
+
+        // when
+        const result = aez.decrypt(key, nonce, ad, vec.tau, ciphertext);
+
+        // then
+        assert.strictEqual(result.toString('hex'), vec.message);
+      });
     });
   });
 });

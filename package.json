@@ -13,7 +13,9 @@
     "authenticated-encryption"
   ],
   "scripts": {
-    "coverage": "nyc --check-coverage mocha",
+    "coverage-report": "nyc report --reporter=lcov",
+    "coverage-html": "nyc report --reporter=html",
+    "coverage": "nyc --check-coverage --branches 90 --functions 90 mocha",
     "unit": "mocha",
     "test": "yarn run coverage"
   },
