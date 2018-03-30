@@ -5,7 +5,7 @@
 [![Open Source Love](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://github.com/ellerbrock/open-source-badge/)
 [![Dependency Status](https://david-dm.org/guggero/aez.svg)](https://david-dm.org/guggero/aez)
 [![devDependency Status](https://david-dm.org/guggero/aez/dev-status.svg)](https://david-dm.org/guggero/aez#info=devDependencies)
-[![Coverage Status](https://coveralls.io/repos/guggero/aez/badge.svg)](https://coveralls.io/r/guggero/aez)
+[![Coverage Status](https://coveralls.io/repos/github/guggero/aez/badge.svg?branch=master)](https://coveralls.io/github/guggero/aez?branch=master)
 
 This is an implementation of the [AEZ](http://web.cs.ucdavis.edu/~rogaway/aez/) authenticated-encryption scheme in JavaScript for node.
 
