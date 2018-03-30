@@ -1,6 +1,6 @@
 {
   "name": "aez",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "AEZ implementation for node",
   "main": "./src/index.js",
   "engines": {

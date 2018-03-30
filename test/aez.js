@@ -107,3 +107,68 @@ describe('test vectors', () => {
     });
   });
 });
+
+describe('edge cases', () => {
+  it('resets the state', () => {
+    // given
+    const state = new AEZState();
+    state.init(Buffer.from('abcdef', 'hex'));
+
+    // when
+    state.reset();
+
+    // then
+    assert.strictEqual(state.I[0].toString('hex'), '00000000000000000000000000000000');
+  });
+
+  it('returns null for empty input to encipher', () => {
+    // given
+    const state = new AEZState();
+
+    // when
+    state.encipher(null, null, null);
+
+    // then
+    assert.strictEqual(state.I[0].toString('hex'), '00000000000000000000000000000000');
+  });
+
+  it('returns null for empty input to decipher', () => {
+    // given
+    const state = new AEZState();
+
+    // when
+    state.decipher(null, null, null);
+
+    // then
+    assert.strictEqual(state.I[0].toString('hex'), '00000000000000000000000000000000');
+  });
+
+  it('returns null if decrypt is unsuccessful', () => {
+    // given
+    const key = Buffer.from('abcdef', 'hex');
+    const ciphertext = Buffer.from('0000000000000000', 'hex');
+
+    // when
+    const result = aez.decrypt(key, null, [], 123, ciphertext);
+
+    // then
+    assert.strictEqual(result, null);
+  });
+
+  it('checks the code example', () => {
+    // given
+
+    // sha256 of 'my-secret-key', but you should use a key derivation function like scrypt or PBKDF2!
+    const key = Buffer.from('1311f8fc80a7ea28d78dd7723f09c44c1754cd35160ca8e7133ae3d7f636a19a', 'hex');
+    const salt = Buffer.from('abba0110', 'hex'); // some random salt
+    const plaintext = Buffer.from('please encrypt me!', 'utf8');
+    const tau = 4;
+
+    // when
+    const cipherText = aez.encrypt(key, null, [salt], tau, plaintext);
+    const decryptedText = aez.decrypt(key, null, [salt], tau, cipherText);
+
+    // then
+    assert.strictEqual(decryptedText.toString(), plaintext.toString());
+  });
+});
