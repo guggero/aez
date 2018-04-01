@@ -1,11 +1,12 @@
 # AEZ implementation for node
 
 [![Build Status](https://travis-ci.org/guggero/aez.svg?branch=master)](https://travis-ci.org/guggero/aez)
-[![GitHub version](https://badge.fury.io/gh/guggero%2Faez.svg)](http://badge.fury.io/gh/guggero%2Faez)
+[![Coverage Status](https://coveralls.io/repos/github/guggero/aez/badge.svg?branch=master)](https://coveralls.io/github/guggero/aez?branch=master)
 [![Open Source Love](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://github.com/ellerbrock/open-source-badge/)
+
+[![npm version](https://badge.fury.io/js/aez.svg)](https://badge.fury.io/js/aez)
 [![Dependency Status](https://david-dm.org/guggero/aez.svg)](https://david-dm.org/guggero/aez)
 [![devDependency Status](https://david-dm.org/guggero/aez/dev-status.svg)](https://david-dm.org/guggero/aez#info=devDependencies)
-[![Coverage Status](https://coveralls.io/repos/github/guggero/aez/badge.svg?branch=master)](https://coveralls.io/github/guggero/aez?branch=master)
 
 This is an implementation of the [AEZ](http://web.cs.ucdavis.edu/~rogaway/aez/) authenticated-encryption scheme in JavaScript for node.
 
