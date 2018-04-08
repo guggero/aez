@@ -3,7 +3,6 @@ const {
   extractKey, multBlock, doubleBlock, oneZeroPad, xorBytes
 } = require('./functions');
 const AESRound = require('./aes_round');
-const Buffer = require('safe-buffer').Buffer;
 const floor = Math.floor;
 
 const ZERO = mkBlock();

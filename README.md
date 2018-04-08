@@ -59,3 +59,23 @@ Encrypts a plaintext buffer with the given key, nonce and additionalData.
 Decrypts a ciphertext buffer with the given key, nonce and additionalData.
 
 If the key is incorrect, `null` is returned.
+
+## Performance
+
+The code is not yet optimized for performance.
+
+The following throughputs were achieved on an Intel Core i7-6500U running on linux/amd64:
+
+```bash
+$ node test/aez_benchmark.js
+Message size: 1 bytes x 18,225 ops/sec ±2.01% (79 runs sampled) 60 us/op 16.3 kB/s
+Message size: 32 bytes x 18,561 ops/sec ±1.88% (87 runs sampled) 58 us/op 540.6 kB/s
+Message size: 512 bytes x 7,669 ops/sec ±1.46% (88 runs sampled) 139 us/op 3.5 MB/s
+Message size: 1024 bytes x 4,804 ops/sec ±1.26% (89 runs sampled) 221 us/op 4.4 MB/s
+Message size: 2048 bytes x 2,607 ops/sec ±3.51% (84 runs sampled) 406 us/op 4.8 MB/s
+Message size: 16384 bytes x 413 ops/sec ±1.27% (87 runs sampled) 2558 us/op 6.1 MB/s
+Message size: 32768 bytes x 215 ops/sec ±0.62% (83 runs sampled) 4910 us/op 6.4 MB/s
+Message size: 65536 bytes x 109 ops/sec ±0.72% (79 runs sampled) 9642 us/op 6.5 MB/s
+Message size: 1024768 bytes x 7.23 ops/sec ±0.82% (22 runs sampled) 140133 us/op 7.0 MB/s
+Done in 49.59s.
+```

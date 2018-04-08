@@ -7,7 +7,7 @@ function encrypt(key, nonce, additionalData, tau, plaintext) {
   let state = new AEZState();
   state.reset();
   state.init(key);
-  let delta = state.aezHash(nonce, additionalData, tau * 8);
+  let delta = state.aezHash(nonce, additionalData || [], tau * 8);
   let x = mkBlock(plaintext.length + tau);
 
   if (!plaintext || plaintext.length === 0) {
@@ -24,7 +24,7 @@ function decrypt(key, nonce, additionalData, tau, ciphertext) {
   let state = new AEZState();
   state.reset();
   state.init(key);
-  let delta = state.aezHash(nonce, additionalData, tau * 8);
+  let delta = state.aezHash(nonce, additionalData || [], tau * 8);
   let sum = 0;
   let x = mkBlock(ciphertext.length);
 
